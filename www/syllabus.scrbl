@@ -257,3 +257,19 @@ a later assignment.
 
 The @coursename instructional staff reserve the right to change any information
 presented on this syllabus. Any such changes will be announced to students.
+
+
+@section{Course Materials}
+
+The materials for this course have been developed by Pierce Darragh and Justin
+Frank, under supervision of Leonidas Lampropoulos.
+
+Some of the elements of the course are based on material by:
+
+@itemlist[
+
+  @item{Matthew Flatt}
+  @item{Benjamin C. Pierce}
+  @item{David Van Horn}
+
+]
