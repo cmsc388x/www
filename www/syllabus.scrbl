@@ -251,3 +251,9 @@ implementations of the assignment with any others after they are graded,
 @bold{provided that} all of the students in question have received nonzero
 scores for that assignment, and if that assignment will not be extended upon in
 a later assignment.
+
+
+@section{Right to Change}
+
+The @coursename instructional staff reserve the right to change any information
+presented on this syllabus. Any such changes will be announced to students.
