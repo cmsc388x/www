@@ -24,4 +24,5 @@ students will have taken CMSC 330 (Programming Languages) prior to this course.
 
 @include-section{syllabus.scrbl}
 @include-section{materials.scrbl}
+@include-section{defining-languages.scrbl}
 @include-section{papers.scrbl}
