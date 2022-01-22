@@ -63,7 +63,102 @@ bit abstract, so just hang tight and keep reading a bit further.)
 There are various ways to write language grammars, but in this class we will
 use a variant of what is known as
 @link["https://en.wikipedia.org/wiki/Extended_Backus–Naur_form"]{Extended
-Backus-Naur Form}, or EBNF for short. Let's consider an EBNF grammar for the
+Backus-Naur Form}, or EBNF for short. Let's consider the EBNF grammar for EBNF
+grammars:
+
+@BNF[(list @nonterm{grammar}
+           @nonterm{rule-list})
+     (list @nonterm{rule-list}
+           @nonterm{rule}
+           @BNF-seq[@nonterm{rule}
+                    @litchar{\n}
+                    @nonterm{rule-list}])
+     (list @nonterm{rule}
+           @BNF-seq[@nonterm{metavariable}
+                    @litchar{::=}
+                    @nonterm{production-list}])
+     (list @nonterm{metavariable}
+           @italic{any symbol or string of symbols})
+     (list @nonterm{production-list}
+           @nonterm{production}
+           @BNF-seq[@nonterm{production}
+                    @litchar{|}
+                    @nonterm{production-list}])
+     (list @nonterm{production}
+           @nonterm{metavariable}
+           @nonterm{terminal}
+           @BNF-seq[@nonterm{production}
+                    @nonterm{production}]
+           @BNF-seq[@nonterm{production}
+                    @litchar{|}
+                    @nonterm{production}]
+           @BNF-seq[@litchar{(}
+                    @nonterm{production}
+                    @litchar{)}])
+     (list @nonterm{terminal}
+           @italic{any symbol or string of symbols that may exist in the
+                   language})
+     ]
+
+This tells us that a @boldtt{grammar} consists of a list of one or more
+@boldtt{rule}s, each of which has three parts: (1) a @boldtt{metavariable},
+which is used as the name of the rule; (2) the symbol @tt{::=}; and (3) a list
+of one or more @boldtt{production}s.
+
+@margin-note{
+  @bold{What is a metavariable?}
+
+  A @emph{metavariable}, also called a @emph{metasyntactic variable}, is a word
+  or symbol that stands for other words or symbols. In the same way that we use
+  letters like @emph{x} to represent numbers in algebra, we can use letters or
+  words in grammars to represent rules in the grammar.}
+
+The @boldtt{metavariable} can be written as any word or symbol that you care to
+write. This word or symbol is not itself part of the langauge; it's just a way
+to reference rules in the grammar. Notice that in the grammar, we describe this
+property using italicized text.
+
+A @boldtt{production} is a recipe for how to @emph{expand} a metavariable. In
+the same way that you might substitute the variable @emph{x} with an actual
+number in an algebraic expression, you can substitute metavariables with one of
+their productions when you want to construct a string in the language to which
+the grammar corresponds. (We will do some examples of this in a bit, so hang
+tight if this doesn't quite make sense yet!)
+
+There are a few kinds of productions you can write. The simplest one is to
+replace the metavariable to which the production corresponds with a
+@boldtt{literal}. A literal is any symbol or string of symbols that are part of
+the language. If we were talking about the language of arithmetic expressions
+(like @tt{1 + 1} or @tt{6 x 9}), the list of literals used would include
+@litchar{1}, @litchar{6}, @litchar{9}, @litchar{+}, and @litchar{x}. These are
+symbols that cannot be expanded to anything else.
+
+In addition to literals, there are also @emph{non-literals}: rules! When you
+see a metavariable in a production, it represents another part of the grammar.
+Variables in algebra are also non-literals, so the expression @tt{x + 1}
+contains the non-literal @tt{x} and the two literals @litchar{+} and
+@litchar{1}.
+
+The next kind of production is one which points to another rule by using a
+metavariable. Although you could hypothetically write anything and call it a
+metavariable, a grammar is only considered to be well-formed ("useful") if the
+metavariables used in productions are defined as rules in the same grammar.
+
+Next, productions can be sequences of other productions. (Yes, rules can
+reference themselves recursively!)
+
+You can also provide multiple alternate productions using @litchar{|}. This is
+the same as if you were to write multiple rules with the same metavariable. It
+means that, whenever you encounter that metavariable, you can use any one of
+the associated productions.
+
+Lastly, a production can be a production wrapped in parentheses. This is useful
+if you want to provide sequences or alternates within a larger production.
+
+
+@subsubsection{A Grammar for the Lambda Calculus}
+
+To give another example, let's consider an EBNF grammar for the
 @link["https://en.wikipedia.org/wiki/Lambda_calculus"]{lambda calculus}:
 
 @(let ([open @litchar{(}]
@@ -81,21 +176,21 @@ Backus-Naur Form}, or EBNF for short. Let's consider an EBNF grammar for the
                        open @nonterm{x} close
                        @nonterm{e} close])])
 
-We see three definitions, each consisting of a @emph{metavariable} (@boldtt{x},
-@boldtt{e}, and @boldtt{v}), the symbol @tt{::=}, and some other stuff on the
-right side of the @tt{::=} symbol.
-
-The first metavariable, @boldtt{x}, corresponds to variable names. The italic
+The first rule, named @boldtt{x}, corresponds to variable names. The italic
 text to the right of the @tt{::=} symbol is meant to be read literally rather
 than as a mathematical concept. Whatever you think "any variable name" means,
 that's how we've defined @boldtt{x}.
 
-The second metavariable, @boldtt{e}, corresponds to @emph{expressions}.
-According to this grammar, an expression can be one of three things:
+The second rule, @boldtt{e}, corresponds to @emph{expressions}. According to
+this grammar, an expression can be one of three things:
 
 @itemlist[
 
-  @item{A variable (shown using the metavariable @boldtt{x}).}
+  @item{A variable (shown using the metavariable @boldtt{x}). Some langauges
+        may choose to constrain what exactly a "variable" may be, but for our
+        purposes right now we will simply allow any string of letters that are
+        not used as literals in the grammar, which in this case is just λ
+        (lambda).}
 
   @item{A sequence consisting of: a literal left parenthesis, an expression, a
         second expression, and a literal right parenthesis. Note that the two
@@ -110,8 +205,51 @@ According to this grammar, an expression can be one of three things:
 ]
 
 @margin-note{We will come back to the distinction between @emph{expressions}
-and @emph{values} shortly.}
+and @emph{values} when we discuss semantics.}
 
-The third and final metavariable, @boldtt{v},
-corresponds to @emph{values}. We define values here to be identical to
-@emph{abstractions} from the expressions.
+The third and final rule, @boldtt{v}, corresponds to @emph{values}. In this
+grammar, we define values to be identical to @emph{abstractions} from the
+expressions.
+
+
+@subsection{Producing Syntax}
+
+Once a grammar has been established, it can be used to generate strings in the
+corresponding langauge. To start building productions, you start at a
+non-terminal. Let's start with the rule for expressions, @boldtt{e}, from our
+grammar for the lambda calculus, and expand the non-terminals until we get to a
+sequence of terminals.
+
+@itemlist[
+
+  @item{@boldtt{e}}
+
+  @item{@litchar{(} @nonterm{e} @nonterm{e} @litchar{)}}
+
+  @item{@litchar{(} @litchar{(} @litchar{λ} @litchar{(} @nonterm{x} @litchar{)}
+        @nonterm{e} @litchar{)} @nonterm{e} @litchar{)}}
+
+  @item{@litchar{(} @litchar{(} @litchar{λ} @litchar{(} @litchar{x} @litchar{)}
+        @nonterm{e} @litchar{)} @nonterm{e} @litchar{)}}
+
+  @item{@litchar{(} @litchar{(} @litchar{λ} @litchar{(} @litchar{x} @litchar{)}
+        @nonterm{x} @litchar{)} @nonterm{e} @litchar{)}}
+
+  @item{@litchar{(} @litchar{(} @litchar{λ} @litchar{(} @litchar{x} @litchar{)}
+        @litchar{x} @litchar{)} @nonterm{e} @litchar{)}}
+
+  @item{@litchar{(} @litchar{(} @litchar{λ} @litchar{(} @litchar{x} @litchar{)}
+        @litchar{x} @litchar{)} @nonterm{x} @litchar{)}}
+
+  @item{@litchar{(} @litchar{(} @litchar{λ} @litchar{(} @litchar{x} @litchar{)}
+        @litchar{x} @litchar{)} @litchar{y} @litchar{)}}
+
+]
+
+We can see from this process that generating a string from a grammar involves a
+sequence of @emph{rewriting steps} (also called @emph{substitutions}). You
+start with a non-terminal, then rewrite that non-terminal with one of its
+productions, then continue rewriting the non-terminals generated from those
+productions until you end up with a string that consists of only terminals.
+(Although not strictly necessary, it is typical to expand the non-terminals
+from left to right, as we did in the above example.)
