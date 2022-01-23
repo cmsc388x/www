@@ -77,12 +77,10 @@ with a directive of University officials.
 
 @section{Grading}
 
-This course will introduce advanced (graduate-level) material. This means that,
-despite being a course for undergraduates, we will do our grading similar to
-what you may find in a graduate-level course. This means that participation and
-effort are of paramount importance for good grades.
-
-(Grading scale to be determined.)
+Although it is designed for undergraduates, this course will introduce advanced
+(graduate-level) material. We will conduct grading similar to what you may find
+in a graduate-level course. Final grades will be determined holistically based
+on your participation and effort given over the course of the semester.
 
 
 @section{Attendance}
