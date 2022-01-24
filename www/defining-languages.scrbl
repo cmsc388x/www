@@ -1,8 +1,10 @@
 #lang scribble/manual
 @(require scribble/core
           scribble/html-properties
+          scribble-math
           "bnf.rkt"
           "common.rkt")
+
 
 @title[#:style 'unnumbered]{Defining Languages}
 
@@ -156,7 +158,7 @@ Lastly, a production can be a production wrapped in parentheses. This is useful
 if you want to provide sequences or alternates within a larger production.
 
 
-@subsubsection{A Grammar for the Lambda Calculus}
+@subsubsection[#:tag "defining-lambda-calculus"]{A Grammar for the Lambda Calculus}
 
 To give another example, let's consider an EBNF grammar for the
 @link["https://en.wikipedia.org/wiki/Lambda_calculus"]{lambda calculus}:
@@ -253,3 +255,183 @@ productions, then continue rewriting the non-terminals generated from those
 productions until you end up with a string that consists of only terminals.
 (Although not strictly necessary, it is typical to expand the non-terminals
 from left to right, as we did in the above example.)
+
+
+@section{Semantics}
+
+Where a syntax tells us what a language looks like, a @emph{semantics} tells us
+what a language @emph{means}.
+
+There are a few schools of thought regarding how we can specify the meaning of
+programming languages, but in this class we will only concern ourselves with
+the technique called
+@link["https://en.wikipedia.org/wiki/Operational_semantics"]{@emph{operational
+semantics}} (and, later, we will discuss an extension of operational semantics
+called @emph{reduction semantics}). In operational semantics, the meaning of a
+programming language is described by rules that repeatedly transform the
+program's syntax until you get to a final result.
+
+
+@subsection{Inference Rules}
+
+The rules used in operational semantics are called
+@link["https://en.wikipedia.org/wiki/Rule_of_inference"]{@emph{inference
+rules}} or @emph{judgment forms} (though we will mostly refer to them as
+"inference rules"). In general, an inference rule looks like this:
+
+@($$ (format "~a \\over ~a"
+             "premise_1\\quad premise_2\\quad\\cdots\\quad premise_n"
+             "conclusion"))
+
+We read the premises from left to right, then the conclusion. We can imagine an
+inference rule says to us "if you can show evidence for all of the premises,
+then you can assume the conclusion is true." Using inference rules, we can
+construct a @link["https://en.wikipedia.org/wiki/Formal_proof"]{@emph{proof}}
+for a desired conclusion by working our way backwards from the bottom to the
+top. But where would the tree end?
+
+Sometimes, the list of premises is empty and you'll just see a line with a
+conclusion:
+
+@($$ (format "~a \\over ~a"
+             "\\vphantom{premise}"
+             "conclusion"))
+
+Such rules are called
+@link["https://en.wikipedia.org/wiki/Axiom"]{@emph{axioms}} because we can
+assume their conclusions without needing any prior information. A
+well-constructed proof built of inference rules should end with only axioms at
+the top. (We'll show an example of a completed proof in a little bit.)
+
+
+@subsection[#:tag "relations"]{Relations}
+
+Almost always, inference rules are written to show the properties of some kind
+of
+@link["https://en.wikipedia.org/wiki/Relation_(mathematics)"]{@emph{relation}}.
+A relation is a way of saying how two things are connected. You probably
+already know a lot of binary relations! For example, the addition operation
+(@${+}) relates numbers and the conjunction operation (@${\land}) relates
+Boolean values.
+
+When defining an operational semantics for a programming language, we will
+often define one of two operators (or, sometimes, both): @${\rightarrow} and
+@${\Downarrow}. Traditionally, the @${\rightarrow} operator is used for what
+are called @emph{small-step} semantics, while the @${\Downarrow} operator is
+used for @emph{big-step} semantics. We will elaborate on the typical
+differences between these relations later, but they both share a key attribute
+in common: they describe @emph{syntactic transformations}. Let's look at what
+that means using an example.
+
+
+@subsection{A Semantics for the Lambda Calculus}
+
+Let's start by taking a look at an operational semantics for the lambda
+calculus, using @seclink["defining-lambda-calculus"]{the syntax defined
+previously}:
+
+@centered[
+  @tabular[
+    #:sep (hspace 1)
+    #:column-properties '(right left)
+    (list
+      (list ($$ (format "~a \\over ~a"
+                        "\\vphantom{M}"
+                        "((\\lambda\\ (x)\\ e)\\ v)\\ \\rightarrow\\ e[x/v]"))
+            "E-App")
+      (list ($$ (format "~a \\over ~a"
+                        "e_1\\ \\rightarrow\\ e_1'"
+                        "(e_1\\ e_2)\\ \\rightarrow\\ (e_1'\\ e_2)"))
+            "E-Arg1")
+      (list ($$ (format "~a \\over ~a"
+                        "e\\ \\rightarrow\\ e'"
+                        "(v\\ e)\\ \\rightarrow\\ (v\\ e')"))
+            "E-Arg2")
+      )]]
+
+This semantics for the lambda calculus defines three rules: E-App, E-Arg1, and
+E-Arg2.
+
+First, let's notice that the first rule, E-App, is axiomatic, meaning it has no
+premises. Second, we should notice that these rules all use the @${\rightarrow}
+relation. Hopefully, this means we have written a small-step semantics, but
+we'll come back to how to check that later.
+
+@margin-note{
+  @bold{Substitution Notation}
+
+  Unfortunately, there is not a single universally agreed-upon notation for
+  substitution. @${e[x/v]} may be the most popular, but you may also see
+  @${e[x\backslash v]}, @${e[v/x]}, @${e[v\backslash x]}, @${e[x\mapsto v]},
+  @${e[x := v]}, or another similar variation.}
+
+E-App tells us that if we have the syntactic form @${((\lambda\ (x)\ e)\ v)},
+we can transform it to @${e[x/v]}, which is the notation for
+@emph{substitution}. What it means is that you should take the @${e} from
+inside the lambda-expression on the left, but replace all occurrences of the
+variable @${x} with the value @${v}. This process is called
+@link["https://en.wikipedia.org/wiki/Lambda_calculus#β-reduction"]{@${\beta}-reduction}
+("beta-reduction").
+
+E-Arg1 and E-Arg2 both have to do with reducing the components of an
+application. A good question to ask might be: given some application form, how
+do we know which rule to use? This is where our metavariables play an important
+roll: if the component on the left is a value @${v}, we use E-Arg2. Otherwise,
+we use E-Arg1. Or, to put it another way: we must use E-Arg1 repeatedly on the
+application form until we have an application with a value @${v} on the left,
+at which point we use E-Arg2 until we have two values. Once both components of
+the application form are values (i.e., our application has the form @${(v_1\
+v_2)}), we can use the E-App rule.
+
+With these three rules, we have defined the small-step reduction relation
+@${\rightarrow} for the lambda calculus.
+
+
+@subsection{Small-Step vs Big-Step Semantics}
+
+@seclink["relations"]{Earlier}, we mentioned that there are two common
+reduction relations used for operational semantics: small-step @${\rightarrow}
+and big-step @${\Downarrow}. So what's the difference?
+
+In a small-step semantics, we write our rules so that they only do one thing at
+a time. This means we will often need to write many rules for some operations.
+In our lambda calculus example, we needed three rules to explain what to do
+with the application form @${(e\ e)}! The advantage of this style of semantics
+is that it is very easy to see how the language works, because everything is
+separated in such a way to highlight all the nuances. However,
+@emph{implementing} a small-step semantics can be quite painful, as we'll see
+during the semester.
+
+The alternative is a big-step semantics, wherein we take a few large steps
+instead of many tiny steps. Here's an example of a big-step semantics for the
+lambda calculus:
+
+@centered[
+  @tabular[
+    #:sep (hspace 1)
+    #:column-properties '(right left)
+    (list
+      (list ($$ (format "~a \\over ~a"
+                        (string-append
+                          "e_1\\ \\Downarrow\\ (\\lambda\\ (x)\\ e_3)"
+                          "\\qquad e_2\\ \\Downarrow\\ v_2"
+                          "\\qquad e_3[x/v_2]\\ \\Downarrow\\ v_3")
+                        "(e_1\\ e_2)\\ \\Downarrow\\ v_3"))
+            "E-App")
+    )]]
+
+This semantics only needs one rule! It can be read in English as something like
+"if @${e_1} reduces by the big-step relation @${\Downarrow} to a
+lambda-expression, @${e_2} reduces to any value, and the beta-reduction of
+those terms results in a value @${v_3}, then the application @${(e_1\ e_2)}
+reduces to the value @${v_3}."
+
+So how can we tell the difference between small-step and big-step semantics,
+other than the arrow operator used? In a big-step semantics, each reduction
+evaluates @emph{fully} to a value. In contrast, the rules in our small-step
+semantics above can produce non-value terms.
+
+Often, it is useful to define both kinds of semantics for a language. The
+small-step semantics is used on paper, while the big-step semantics is used for
+implementing an interpreter for the language. We will see both of these
+throughout this class.
