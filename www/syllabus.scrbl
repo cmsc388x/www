@@ -17,7 +17,7 @@ programming in OCaml, operational semantics, and the lambda calculus.
 
 @coursename is an introduction to research in the field of programming
 languages (PL) that is specifically tailored to undergraduate students. We will
-explore foundational results in PL reseearch as well as the skills and
+explore foundational results in PL research as well as the skills and
 techniques used in developing new research.
 
 
