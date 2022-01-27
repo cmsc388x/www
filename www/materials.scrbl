@@ -30,7 +30,7 @@ and install the necessary packages:
 
 @verbatim|{
 $ opam switch create 4.12.1
-$ opam install dune utop ocaml-lsp-server merlin
+$ opam install dune utop ocaml-lsp-server merlin ounit ounit2
 }|
 
 
